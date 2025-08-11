@@ -1,13 +1,11 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
-from fastapi.params import Depends
-from starlette.responses import JSONResponse
+from fastapi import FastAPI, Depends, HTTPException
 import uvicorn
 
 from database import create_tables
 from repository import get_dog_repository, DogRepository
-from schemas import Dog
+from schemas import DogCreate, DogRead
 
 
 @asynccontextmanager
@@ -18,18 +16,18 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-@app.get("/dog/{id}")
-async def get_a_dog(id: str, dog_repo: DogRepository = Depends(get_dog_repository)) -> Dog:
-    response = await dog_repo.get_dog_by_id(id)
-    if response is None:
-        return JSONResponse(status_code=404, content={"message": "Dog not found"})
-    return response
+@app.get("/dog/{id}", response_model=DogRead)
+async def get_a_dog(id: str, dog_repo: DogRepository = Depends(get_dog_repository)) -> DogRead:
+    dog = await dog_repo.get_dog_by_id(id)
+    if dog is None:
+        raise HTTPException(status_code=404, detail="Dog not found")
+    return dog
 
 
-@app.post("/dog")
-async def create_dog(dog: Dog, dog_repo: DogRepository = Depends(get_dog_repository)):
-    await dog_repo.create_dog(dog)
-    return JSONResponse(status_code=201, content={"message": "Dog created successfully"})
+@app.post("/dog", response_model=DogRead, status_code=201)
+async def create_dog(dog: DogCreate, dog_repo: DogRepository = Depends(get_dog_repository)) -> DogRead:
+    new_dog = await dog_repo.create_dog(dog)
+    return new_dog
 
 
 if __name__ == "__main__":

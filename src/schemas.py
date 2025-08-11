@@ -1,13 +1,19 @@
 from pydantic import BaseModel
 
 
-class Dog(BaseModel):
-    id: str | None = None
+class DogBase(BaseModel):
     name: str
     age: int
     breed: str
     owner_name: str
 
+
+class DogCreate(DogBase):
+    pass
+
+
+class DogRead(DogBase):
+    id: str
+
     class Config:
-        orm_mode = True
         from_attributes = True

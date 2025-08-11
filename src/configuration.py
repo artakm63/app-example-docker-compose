@@ -11,7 +11,7 @@ class AppSettings(BaseSettings):
     postgres_db: Optional[str] = Field('mydatabase')
 
     class Config:
-        env_file = "../.env_example"
+        env_file = ".env"
         env_file_encoding = "utf-8"
 
 
